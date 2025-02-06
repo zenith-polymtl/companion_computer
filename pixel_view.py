@@ -11,10 +11,9 @@ app = Flask(__name__)
 picam2 = Picamera2()
 picam2.configure(picam2.create_preview_configuration(main={"size": (1280, 720)}))
 picam2.set_controls({
-    "AeEnable": False,          # Disable auto exposure
-    "ExposureTime": 50000,       # Fixed exposure time (in microseconds)
-    "AnalogueGain": 10,        # Fixed analog gain
-    "AwbEnable": False,         # Disable auto white balance
+    "AeEnable": True,          # Disable auto exposure      # Fixed exposure time (in microseconds)
+    "AnalogueGain": 1,        # Fixed analog gain
+    "AwbEnable": True,         # Disable auto white balance
     "FrameDurationLimits": (16666, 16666),  # ~60 FPS
     "NoiseReductionMode": 0,    # Disable noise reduction
 })
@@ -22,35 +21,64 @@ picam2.start()
 
 time.sleep(2)  # Allow the camera to stabilize
 
-def overlayed_grid(frame, spacing=10):
+def overlayed_grid_centered(frame, spacing=50):
     """
-    Overlays a grid on the frame with the specified spacing.
-
-    Parameters:
-        frame (numpy.ndarray): The input frame.
-        spacing (int): The spacing between grid lines in pixels.
-
-    Returns:
-        numpy.ndarray: The frame with the grid overlaid.
+    Overlays a grid on the frame, centered at the midpoint of the frame.
+    
+    The grid lines are spaced every `spacing` pixels in both x and y 
+    directions, with the first line drawn at the frame's center.
     """
-    # Create a copy of the frame to draw the grid
     output_frame = frame.copy()
-    height, width = frame.shape[:2]
-    print(f" Shape : {height, width}")
+    height, width = output_frame.shape[:2]
 
-    # Draw vertical grid lines
-    for x in range(0, width, spacing):
+    # Flip if needed (like in your example, flip vertically)
+    flipped = cv2.flip(output_frame, 0)
+    output_frame = cv2.flip(flipped, 1)
+
+    # Find center coordinates of the frame
+    center_x = width // 2
+    center_y = height // 2
+
+    # 1) Draw the CENTER lines
+    # Vertical center line
+    cv2.line(output_frame, (center_x, 0), (center_x, height), color=(255, 255, 255), thickness=1)
+    # Horizontal center line
+    cv2.line(output_frame, (0, center_y), (width, center_y), color=(255, 255, 255), thickness=1)
+
+    # 2) Draw additional lines to the RIGHT of the center
+    x = center_x + spacing
+    while x < width:
         cv2.line(output_frame, (x, 0), (x, height), color=(255, 255, 255), thickness=1)
         cv2.putText(output_frame, f"{x}", (x, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        x += spacing
 
-    # Draw horizontal grid lines
-    for y in range(0, height, spacing):
+    # 3) Draw additional lines to the LEFT of the center
+    x = center_x - spacing
+    while x >= 0:
+        cv2.line(output_frame, (x, 0), (x, height), color=(255, 255, 255), thickness=1)
+        cv2.putText(output_frame, f"{x}", (x, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        x -= spacing
+
+    # 4) Draw additional lines BELOW the center
+    y = center_y + spacing
+    while y < height:
         cv2.line(output_frame, (0, y), (width, y), color=(255, 255, 255), thickness=1)
         cv2.putText(output_frame, f"{y}", (10, y),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        y += spacing
 
-    
+    # 5) Draw additional lines ABOVE the center
+    y = center_y - spacing
+    while y >= 0:
+        cv2.line(output_frame, (0, y), (width, y), color=(255, 255, 255), thickness=1)
+        cv2.putText(output_frame, f"{y}", (10, y),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        y -= spacing
+
+    return output_frame
+
 
     return output_frame
 
@@ -66,7 +94,7 @@ def generate_frames():
 
 
         # Encode the frame as JPEG
-        _, buffer = cv2.imencode('.jpg', overlayed_grid(frame, spacing = 50))
+        _, buffer = cv2.imencode('.jpg', overlayed_grid_centered(frame, spacing = 100))
         frame = buffer.tobytes()
 
         # Yield the frame

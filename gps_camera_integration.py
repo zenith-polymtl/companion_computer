@@ -9,7 +9,7 @@ import time
 import math
 
 
-master = connect('tcp:192.168.0.160:5762')
+master = connect('/dev/ttyACM1')
 print("CONNECTED")
 
 app = Flask(__name__)
