@@ -9,7 +9,7 @@ import time
 import math
 
 
-master = connect('/dev/ttyACM1')
+master = connect('/dev/ttyACM0')
 print("CONNECTED")
 
 app = Flask(__name__)
@@ -71,9 +71,9 @@ def generate_frames():
         start_time = time.time()
         # Capture a frame using Picamera2
         frame = picam.capture_array()
-        print('PIC')
-        
         global_pos = get_global_pos(master)
+        time_mesure = time.time()
+        
 
         # Analyze the frame
         processed_frame, processing_time, centroid = analyze_frame_mean(frame, pos = global_pos, start_time=start_time)
@@ -84,6 +84,7 @@ def generate_frames():
         except:
             csv_good = False
 
+        print(csv_good)
         if csv_good:
             emitter_lat, emitter_lon = compute_displacement(centroid,pos = global_pos)
             insert_coordinates_to_csv('potentiel_sources.csv', (emitter_lat, emitter_lon))

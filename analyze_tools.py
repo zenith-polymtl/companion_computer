@@ -70,19 +70,19 @@ def analyze_frame_DBSCAN(frame, min_points_in_cluster=3, scale_percent=10, thres
 
 def analyze_csv_dbscan(dataframe, eps=0.0001, min_samples=3):
     """
-    Reads a DataFrame with latitude and longitude, applies DBSCAN clustering,
+    Reads a DataFrame with Est_Lat and Est_Lon, applies DBSCAN clustering,
     and visualizes the detected clusters.
 
-    :param dataframe: Pandas DataFrame with 'Latitude' and 'Longitude' columns
+    :param dataframe: Pandas DataFrame with 'Est_Lat' and 'Est_Lon' columns
     :param eps: Maximum distance between points in a cluster (adjust for GPS scale)
     :param min_samples: Minimum number of points in a cluster
     :return: DataFrame with clusters, DataFrame with centroids, List of cluster groups
     """
     # Ensure required columns exist
-    if 'Latitude' not in dataframe.columns or 'Longitude' not in dataframe.columns:
-        raise ValueError("CSV must contain 'Latitude' and 'Longitude' columns")
+    if 'Est_Lat' not in dataframe.columns or 'Est_Lon' not in dataframe.columns:
+        raise ValueError("CSV must contain 'Est_Lat' and 'Est_Lon' columns")
     
-    coords = dataframe[['Latitude', 'Longitude']].to_numpy()
+    coords = dataframe[['Est_Lat', 'Est_Lon']].to_numpy()
 
     # Apply DBSCAN clustering (Ensure correct input format)
     dbscan = DBSCAN(eps=eps, min_samples=min_samples, metric='haversine')
@@ -105,27 +105,27 @@ def analyze_csv_dbscan(dataframe, eps=0.0001, min_samples=3):
         cluster_groups.append(cluster_points.tolist())
 
     # Convert centroids to a DataFrame
-    centroids_df = pd.DataFrame(centroids, columns=['Latitude', 'Longitude'])
+    centroids_df = pd.DataFrame(centroids, columns=['Est_Lat', 'Est_Lon'])
 
     # Plot clusters and centroids
     plt.figure(figsize=(8, 6))
     for label in unique_labels:
         if label == -1:
-            plt.scatter(dataframe[dataframe['Cluster'] == label]['Longitude'], 
-                        dataframe[dataframe['Cluster'] == label]['Latitude'], 
+            plt.scatter(dataframe[dataframe['Cluster'] == label]['Est_Lon'], 
+                        dataframe[dataframe['Cluster'] == label]['Est_Lat'], 
                         c='grey', marker='x', label='Noise')
         else:
-            plt.scatter(dataframe[dataframe['Cluster'] == label]['Longitude'], 
-                        dataframe[dataframe['Cluster'] == label]['Latitude'], 
+            plt.scatter(dataframe[dataframe['Cluster'] == label]['Est_Lon'], 
+                        dataframe[dataframe['Cluster'] == label]['Est_Lat'], 
                         label=f'Cluster {label}')
     
     # Plot centroids
     if len(centroids) > 0:
-        plt.scatter(centroids_df['Longitude'], centroids_df['Latitude'], 
+        plt.scatter(centroids_df['Est_Lon'], centroids_df['Est_Lat'], 
                     c='red', marker='o', s=100, label='Centroids')
     
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
+    plt.xlabel('Est_Lon')
+    plt.ylabel('Est_Lat')
     plt.legend()
     plt.title('DBSCAN Clustering of GPS Coordinates')
     plt.show()
@@ -170,7 +170,7 @@ def analyze_frame_mean(frame, pos = None, scale_percent=10, threshold=254, start
         
         
             
-        return output_frame, total_time, centroid
+        return output_frame, total_time, centroid_coords
 
         
 

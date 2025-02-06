@@ -1,55 +1,89 @@
 from analyze_tools import analyze_csv_dbscan
 from time import sleep
 from pandas import read_csv
-import matplotlib.pyplot as plt
+import os
+import glob
 import matplotlib
+import time
 matplotlib.use('Agg')  # Use headless (non-GUI) backend
 import matplotlib.pyplot as plt
 
+def get_latest_csv():
+    """Finds the most recent CSV file in the data directory"""
+    data_dirs = sorted(glob.glob("data/*"), reverse=True)  # Sort directories by date
+    for directory in data_dirs:
+        csv_files = sorted(glob.glob(os.path.join(directory, "*.csv")), reverse=True)
+        if csv_files:
+            return csv_files[0]  # Return latest CSV file
+    return None
+
 while True:
-    # Load CSV
     try:
-        data = read_csv('potentiel_sources.csv')
+        latest_csv = get_latest_csv()
+
+        if not latest_csv:
+            print("No CSV file found! Waiting for data...")
+            sleep(30)
+            continue
+
+        print(f"🔄 Trying to load data from: {latest_csv}")
+
+        # Retry mechanism for file reading
+        for attempt in range(5):  # Retry 5 times before giving up
+            try:
+                data = read_csv(latest_csv, encoding='utf-8')  # Force UTF-8 encoding
+                break  # Success, exit loop
+            except Exception as e:
+                print(f"⚠️ Error reading CSV (attempt {attempt+1}): {e}")
+                sleep(5)  # Wait before retrying
+        else:
+            print("❌ Failed to read CSV after multiple attempts.")
+            sleep(30)
+            continue
+
+        # Debug: Print CSV headers and first few rows
+        print(f"✅ CSV Headers: {list(data.columns)}")
+        print("📊 Sample data:\n", data.head())
 
         # Ensure required columns exist
-        if 'Latitude' not in data.columns or 'Longitude' not in data.columns:
-            raise ValueError("CSV must contain 'Latitude' and 'Longitude' columns")
-
-        # Ensure there's data in the CSV
-        if data.empty:
-            print("CSV is empty! Waiting for data...")
+        if "Est_Lat" not in data.columns or "Est_Lon" not in data.columns:
+            print(f"❌ Missing expected columns in {latest_csv}. Found: {list(data.columns)}")
             sleep(30)
-            exit()
+            continue
 
-        
-
+        if data.empty:
+            print("🚨 CSV is empty! Waiting for data...")
+            sleep(30)
+            continue
 
         # Analyze with DBSCAN
         clustered_data, centroids_df, cluster_groups, centroids = analyze_csv_dbscan(data, eps=0.00000008, min_samples=5)
 
         # Extract Latitude and Longitude
-        lat, lon = data['Latitude'], data['Longitude']
-        print(lat,lon,centroids)
+        lat, lon = data["Est_Lat"], data["Est_Lon"]
+        print(f"Loaded {len(lat)} GPS points")
 
         # Plot raw data
         plt.figure(figsize=(8, 6))
-        plt.scatter(lon, lat, c='blue', marker='o')  # Longitude (X-axis), Latitude (Y-axis)
+        plt.scatter(lon, lat, c='blue', marker='o', label="Estimated Locations")
 
-        plt.scatter([centre[1] for centre in centroids], [centre[0] for centre in centroids], c='red', marker='o')  # Longitude (X-axis), Latitude (Y-axis)
-        plt.title("Raw Data Points")
+        if centroids:
+            plt.scatter([c[1] for c in centroids], [c[0] for c in centroids], c='red', marker='o', label="Cluster Centers")
+
+        plt.title("Estimated Hotspot Locations")
         plt.xlabel("Longitude")
         plt.ylabel("Latitude")
-        plt.savefig('data')
-
-        
+        plt.legend()
+        plot_path = os.path.join("data", "hotspots_plot.png")
+        plt.savefig(plot_path)
+        print(f"📊 Plot saved: {plot_path}")
 
         print("✅ POINTS FOUND:")
         print(clustered_data)
 
     except FileNotFoundError:
-        print("CSV file not found! Make sure 'potentiel_sources.csv' exists.")
-    except ValueError as e:
-        print(f"ERROR: {e}")
+        print("🚨 CSV file not found! Waiting for new data...")
+    except Exception as e:
+        print(f"❌ Unexpected Error: {e}")
 
-    # Sleep before next cycle
     sleep(30)
