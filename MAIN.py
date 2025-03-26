@@ -1,4 +1,4 @@
-from companion_computer.helper_func import *
+from helper_func import *
 from analyze_tools import initialize_cam
 from analyze_tools import analyze_frame_mean
 import numpy as np
@@ -86,6 +86,7 @@ def capture_and_log(freq_max = 100):
                 # Start another script
                 process = subprocess.Popen(['python3', 'code/analysis_and_kml.py'])
                 first = False
+                print("STARTED ANALYSIS")
 
             start_time = time.time()
             
@@ -102,13 +103,14 @@ def capture_and_log(freq_max = 100):
             except:
                 csv_good = False
                 # Save image
-                timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+                timestamp = time.strftime("%Y-%m-%d_%H-%M-%S") + f"-{int((time.time() % 1) * 100):02d}"
                 img_path = os.path.join(data_dir, f"{timestamp}.jpg")
                 cv2.imwrite(img_path, processed_frame)
 
             if csv_good:
                 est_lat, est_lon = compute_displacement(centroid, pos=global_pos)
-                timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+                timestamp = time.strftime("%Y-%m-%d_%H-%M-%S") + f"-{int((time.time() % 1) * 100):02d}"
+
                 
                 # Save image
                 img_path = os.path.join(data_dir, f"{timestamp}.jpg")
@@ -118,9 +120,7 @@ def capture_and_log(freq_max = 100):
                 with open(csv_file, mode='a', newline='') as file:
                     writer = csv.writer(file)
                     writer.writerow([timestamp, img_path, global_pos[0], global_pos[1], global_pos[2], centroid[0], centroid[1], est_lat, est_lon])
-
-
-            time.sleep(1/freq_max) # Adjust as needed to prevent excessive capture rate
+            print(f"Time taken :  {time.time()-start_time}")
         else:
             if not first:
                 process.terminate()
