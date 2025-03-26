@@ -85,12 +85,43 @@ def message_request(connection, message_type, freq_hz=10):
         0,  # Unused parameters
     )
 
+def get_rc_value(connection, channel):
+    """
+    Retrieve the raw value of an RC channel.
+    
+    Args:
+        connection: MAVLink connection object.
+        channel (int): Channel number to read (1-18).
 
-def connect(ip_address='tcp:127.0.0.1:5762'):
+    Returns:
+        int: Raw RC channel value (1000 - 2000).
+    """
+
+    # Request the RC_CHANNELS message at 10Hz
+    message_request(connection, mavutil.mavlink.MAVLINK_MSG_ID_RC_CHANNELS, freq_hz=60)
+
+    while connection.recv_match(type="RC_CHANNELS", blocking=False):
+        pass  # Discard old messages
+    
+    while True:
+        msg = connection.recv_match(type="RC_CHANNELS", blocking=True)
+        if msg and msg.get_type() == "RC_CHANNELS":
+            # Channel values are indexed from 1 to 18
+            if 1 <= channel <= 18:
+                value = getattr(msg, f'chan{channel}_raw', None)
+                if value is not None:
+                    #print(f"RC Channel {channel} Value: {value}")
+                    return value
+                else:
+                    print(f"Channel {channel} not available in the message.")
+                    return None
+
+
+def connect(ip_address='tcp:127.0.0.1:5762', baud = 115200):
     # Create the connection
     # Establish connection to MAVLink
     print('trying to connect')
-    connection = mavutil.mavlink_connection(ip_address)
+    connection = mavutil.mavlink_connection(ip_address, baud = baud)
     print('Waiting for heartbeat...')
     connection.wait_heartbeat()
     print("Heartbeat received!")

@@ -6,14 +6,14 @@ from picamera2 import Picamera2
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def initialize_cam(gain = 1.5):
+def initialize_cam(gain = 1, ExposureTime = 5000):
     
-# Initialize the Raspberry Pi Camera using Picamera2
+    # Initialize the Raspberry Pi Camera using Picamera2
     picam2 = Picamera2()
     picam2.configure(picam2.create_preview_configuration(main={"size": (1280, 720)}))
     picam2.set_controls({
         "AeEnable": False,          # Disable auto exposure
-        "ExposureTime": 50000,       # Fixed exposure time (in microseconds)
+        "ExposureTime": ExposureTime,       # Fixed exposure time (in microseconds)
         "AnalogueGain": gain,        # Fixed analog gain
         "AwbEnable": False,         # Disable auto white balance
         "FrameDurationLimits": (16666, 16666),  # ~60 FPS

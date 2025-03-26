@@ -4,7 +4,7 @@ import cv2
 import time
 from analyze_tools import *
 app = Flask(__name__)
-picam2 = initialize_cam(gain = 3)
+picam2 = initialize_cam(gain = 1, ExposureTime=2000)
 
 time.sleep(2)  # Allow the camera to stabilize
 
@@ -13,15 +13,15 @@ def generate_frames():
     Captures frames from the camera, processes them, and yields the processed frames for streaming.
     """
     while True:
-        start_time = time.time()
         # Capture a frame using Picamera2
+        start_time = time.time()
         frame = picam2.capture_array()
 
         # Analyze the frame
-        #processed_frame, processing_time, centroid = analyze_frame_mean(frame, start_time=start_time)
+        processed_frame, processing_time, centroid = analyze_frame_mean(frame, start_time=start_time)
 
 
-        #print(f"Analysis FPS : {1/processing_time:8.2f} Hz // Time taken by analysis : {processing_time:8.4f} seconds")
+        print(f"Analysis FPS : {1/processing_time:8.2f} Hz // Time taken by analysis : {processing_time:8.4f} seconds")
 
 
         # Encode the frame as JPEG

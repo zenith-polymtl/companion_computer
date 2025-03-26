@@ -8,16 +8,19 @@ import os
 import csv
 import math
 import geopy.distance
+import subprocess
+
+
 
 # Initialize connection and camera
-master = connect('/dev/ttyACM0')
+master = connect('/dev/serial0')
 print("CONNECTED")
 
-picam = initialize_cam()
+picam = initialize_cam(gain = 1, ExposureTime=2000)
 time.sleep(2)  # Allow the camera to stabilize
 
-set_mode(master, 'GUIDED')
-print("MODE SET TO GUIDED")
+
+
 
 # Create a folder for today's data
 today = time.strftime("%Y-%m-%d")
@@ -75,43 +78,56 @@ def compute_displacement(centroid, pos):
 
 
 
-def capture_and_log(freq_max = 2):
+def capture_and_log(freq_max = 100):
     """ Captures images, analyzes frames, and logs relevant data """
+    first = True
     while True:
-        start_time = time.time()
-        
-        # Capture a frame
-        frame = picam.capture_array()
-        global_pos = get_global_pos(master)
+        if get_rc_value(master, 7) > 1600:  # Only capture when the RC value is above 1600
+            if first:
+                # Start another script
+                process = subprocess.Popen(['python3', 'code/analysis_and_kml.py'])
+                first = False
 
-        # Analyze the frame
-        processed_frame, processing_time, centroid = analyze_frame_mean(frame, pos=global_pos, start_time=start_time)
-
-        try:
-            len(centroid)
-            csv_good = True
-        except:
-            csv_good = False
-            # Save image
-            timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
-            img_path = os.path.join(data_dir, f"{timestamp}.jpg")
-            cv2.imwrite(img_path, processed_frame)
-
-        if csv_good:
-            est_lat, est_lon = compute_displacement(centroid, pos=global_pos)
-            timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+            start_time = time.time()
             
-            # Save image
-            img_path = os.path.join(data_dir, f"{timestamp}.jpg")
-            cv2.imwrite(img_path, processed_frame)
+            # Capture a frame
+            frame = picam.capture_array()
+            global_pos = get_global_pos(master)
 
-            # Append metadata to CSV
-            with open(csv_file, mode='a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow([timestamp, img_path, global_pos[0], global_pos[1], global_pos[2], centroid[0], centroid[1], est_lat, est_lon])
+            # Analyze the frame
+            processed_frame, processing_time, centroid = analyze_frame_mean(frame, pos=global_pos, start_time=start_time)
+
+            try:
+                len(centroid)
+                csv_good = True
+            except:
+                csv_good = False
+                # Save image
+                timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+                img_path = os.path.join(data_dir, f"{timestamp}.jpg")
+                cv2.imwrite(img_path, processed_frame)
+
+            if csv_good:
+                est_lat, est_lon = compute_displacement(centroid, pos=global_pos)
+                timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
+                
+                # Save image
+                img_path = os.path.join(data_dir, f"{timestamp}.jpg")
+                cv2.imwrite(img_path, processed_frame)
+
+                # Append metadata to CSV
+                with open(csv_file, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([timestamp, img_path, global_pos[0], global_pos[1], global_pos[2], centroid[0], centroid[1], est_lat, est_lon])
 
 
-        time.sleep(1/freq_max) # Adjust as needed to prevent excessive capture rate
+            time.sleep(1/freq_max) # Adjust as needed to prevent excessive capture rate
+        else:
+            if not first:
+                process.terminate()
+                process.wait()
+                first = True
+            time.sleep(1)
 
 
 if __name__ == '__main__':
