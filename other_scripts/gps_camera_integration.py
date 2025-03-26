@@ -1,4 +1,4 @@
-from helper_funcs import *
+from companion_computer.helper_funcs_old import *
 from analyze_tools import *
 
 import numpy as np
@@ -7,59 +7,56 @@ from picamera2 import Picamera2
 import cv2
 import time
 import math
-
+import geopy
 
 master = connect('/dev/ttyACM0')
 print("CONNECTED")
 
 app = Flask(__name__)
 
-picam = initialize_cam()
+
+picam = initialize_cam(gain = 1, ExposureTime=2000)
 
 time.sleep(2)  # Allow the camera to stabilize
 
 
-set_mode(master, 'GUIDED')
-print("MODE SET TO GUIDED")
-
-
-def convert_pixel_to_meters(x,y):
-    return x/10, y/10
+def convert_pixel_to_meters(x, y, d = 7):
+    """ Converts pixel displacement to meters """
+    coeff = 0.001279
+    return x *coeff* d, y *coeff*d
 
 def compute_displacement(centroid, pos):
+    """Computes GPS displacement from pixel centroid position, considering heading and Earth's curvature"""
     
-    drone_lat = pos[0]
-    drone_lon = pos[1]
-    hdg = pos[3]
-
-    x_frame, y_frame = centroid[0], centroid[1]
-    x_frame -= 1280/2
-    y_frame -= 720/2
-
-    delta_x, delta_y = convert_pixel_to_meters(x_frame, y_frame)
-
-    # Earth radius in meters
-    R_E = 6378137.0  # WGS-84 approximation
+    if not isinstance(centroid, (list, tuple)) or len(centroid) != 2:
+        raise ValueError("Invalid centroid: expected (x, y) tuple.")
     
-    # Compute absolute heading
+    if not isinstance(pos, (list, tuple)) or len(pos) < 4:
+        raise ValueError("Invalid position: expected (lat, lon, alt, hdg) tuple.")
+    
+    drone_lat, drone_lon, altitude, hdg = pos
+    x_frame, y_frame = centroid
+
+    # Adjust to center frame
+    x_frame -= 1280 / 2
+    y_frame -= 720 / 2  
+    y_frame *= -1  # Flip y-axis for Cartesian representation
+
+    # Pixel to meters conversion with altitude consideration
+    delta_x, delta_y = convert_pixel_to_meters(x_frame, y_frame, 7)
+
     abs_heading = math.radians(hdg)
 
-    delta_distance = np.sqrt(delta_x**2 +  delta_y**2)
-    
-    # Compute NED offsets
-    north_offset = delta_distance * math.cos(abs_heading)
-    east_offset = delta_distance * math.sin(abs_heading)
+    # Apply correct 2D rotation for heading, Might be really wrong, really depends on conventions used, to verify
+    north_offset = delta_x * math.cos(abs_heading) - delta_y * math.sin(abs_heading)
+    east_offset = delta_x * math.sin(abs_heading) + delta_y * math.cos(abs_heading)
 
-    # Convert latitude displacement
-    delta_lat = (north_offset / R_E) * (180 / math.pi)
-    
-    # Convert longitude displacement (adjusted for latitude)
-    delta_lon = (east_offset / (R_E * math.cos(math.radians(drone_lat)))) * (180 / math.pi)
+    # Geodetic displacement using Haversine-based approach, put more effort in understanding this part cause I dont understand it
+    new_position = geopy.distance.distance(meters=np.sqrt(north_offset**2 + east_offset**2)).destination(
+        (drone_lat, drone_lon), math.degrees(abs_heading)
+    )
 
-    emitter_lat = drone_lat + delta_lat
-    emitter_lon = drone_lon + delta_lon
-
-    return emitter_lat, emitter_lon
+    return new_position.latitude, new_position.longitude
 
 
 
@@ -84,7 +81,6 @@ def generate_frames():
         except:
             csv_good = False
 
-        print(csv_good)
         if csv_good:
             emitter_lat, emitter_lon = compute_displacement(centroid,pos = global_pos)
             insert_coordinates_to_csv('potentiel_sources.csv', (emitter_lat, emitter_lon))

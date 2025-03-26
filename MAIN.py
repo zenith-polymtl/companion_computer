@@ -1,4 +1,4 @@
-from helper_funcs import *
+from companion_computer.helper_func import *
 from analyze_tools import initialize_cam
 from analyze_tools import analyze_frame_mean
 import numpy as np
@@ -10,10 +10,10 @@ import math
 import geopy.distance
 import subprocess
 
-
+mav = pymav()
 
 # Initialize connection and camera
-master = connect('/dev/serial0')
+mav.connect('/dev/serial0')
 print("CONNECTED")
 
 picam = initialize_cam(gain = 1, ExposureTime=2000)
@@ -37,7 +37,7 @@ if not os.path.exists(csv_file):
         writer.writerow(["Timestamp", "Image", "Drone_Lat", "Drone_Lon", "Drone_Alt", "Centroid_X", "Centroid_Y", "Est_Lat", "Est_Lon"])
 
 
-def convert_pixel_to_meters(x, y,d = 5):
+def convert_pixel_to_meters(x, y,d = 7):
     """ Converts pixel displacement to meters """
     coeff = 0.001279
     return x *coeff* d, y *coeff*d
@@ -61,7 +61,7 @@ def compute_displacement(centroid, pos):
     y_frame *= -1  # Flip y-axis for Cartesian representation
 
     # Pixel to meters conversion with altitude consideration
-    delta_x, delta_y = convert_pixel_to_meters(x_frame, y_frame, altitude)
+    delta_x, delta_y = convert_pixel_to_meters(x_frame, y_frame, 7)
 
     abs_heading = math.radians(hdg)
 
@@ -77,12 +77,11 @@ def compute_displacement(centroid, pos):
     return new_position.latitude, new_position.longitude
 
 
-
 def capture_and_log(freq_max = 100):
     """ Captures images, analyzes frames, and logs relevant data """
     first = True
     while True:
-        if get_rc_value(master, 7) > 1600:  # Only capture when the RC value is above 1600
+        if mav.get_rc_value(7) > 1600:  # Only capture when the RC value is above 1600
             if first:
                 # Start another script
                 process = subprocess.Popen(['python3', 'code/analysis_and_kml.py'])
@@ -92,10 +91,10 @@ def capture_and_log(freq_max = 100):
             
             # Capture a frame
             frame = picam.capture_array()
-            global_pos = get_global_pos(master)
+            global_pos = mav.get_global_pos(heading=True)
 
             # Analyze the frame
-            processed_frame, processing_time, centroid = analyze_frame_mean(frame, pos=global_pos, start_time=start_time)
+            processed_frame, processing_time, centroid = analyze_frame_mean(frame, pos=global_pos, threshold=150, start_time=start_time)
 
             try:
                 len(centroid)

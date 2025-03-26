@@ -5,8 +5,9 @@ import time
 from picamera2 import Picamera2
 import matplotlib.pyplot as plt
 import pandas as pd
+from libcamera import controls
 
-def initialize_cam(gain = 1, ExposureTime = 5000):
+def initialize_cam(gain = 1, ExposureTime = 5000, lenspos = 0.143):
     
     # Initialize the Raspberry Pi Camera using Picamera2
     picam2 = Picamera2()
@@ -18,6 +19,8 @@ def initialize_cam(gain = 1, ExposureTime = 5000):
         "AwbEnable": False,         # Disable auto white balance
         "FrameDurationLimits": (16666, 16666),  # ~60 FPS
         "NoiseReductionMode": 0,    # Disable noise reduction
+        "AfMode": controls.AfModeEnum.Manual,
+        "LensPosition": 0.143 #Réciproque de 7m
     })
     picam2.start()
     return picam2
