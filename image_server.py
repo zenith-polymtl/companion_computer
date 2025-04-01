@@ -4,7 +4,7 @@ import cv2
 import time
 from analyze_tools import *
 app = Flask(__name__)
-picam2 = initialize_cam(gain = 1, ExposureTime=2000)
+picam2 = initialize_cam(gain = 8, ExposureTime=2000, lenspos = 8)
 
 time.sleep(2)  # Allow the camera to stabilize
 

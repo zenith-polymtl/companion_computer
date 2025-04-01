@@ -20,7 +20,7 @@ def initialize_cam(gain = 1, ExposureTime = 5000, lenspos = 0.143):
         "FrameDurationLimits": (16666, 16666),  # ~60 FPS
         "NoiseReductionMode": 0,    # Disable noise reduction
         "AfMode": controls.AfModeEnum.Manual,
-        "LensPosition": 0.143 #Réciproque de 7m
+        "LensPosition": lenspos #Réciproque de x m
     })
     picam2.start()
     return picam2
@@ -71,7 +71,7 @@ def analyze_frame_DBSCAN(frame, min_points_in_cluster=3, scale_percent=10, thres
 
     return frame, time.time() - start_time
 
-def analyze_csv_dbscan(dataframe, eps=0.0001, min_samples=3):
+def analyze_csv_dbscan(dataframe, eps=0.0000001, min_samples=3):
     """
     Reads a DataFrame with Est_Lat and Est_Lon, applies DBSCAN clustering,
     and visualizes the detected clusters.

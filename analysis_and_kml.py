@@ -57,8 +57,8 @@ while True:
             continue
 
         # Analyze with DBSCAN
-        clustered_data, centroids_df, cluster_groups, centroids = analyze_csv_dbscan(data, eps=0.00000008, min_samples=5)
-
+        clustered_data, centroids_df, cluster_groups, centroids = analyze_csv_dbscan(data, eps=0.0000001, min_samples=5)
+        print(centroids)
         # Extract Latitude and Longitude
         lat, lon = data["Est_Lat"], data["Est_Lon"]
         print(f"Loaded {len(lat)} GPS points")

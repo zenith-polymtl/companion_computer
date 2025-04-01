@@ -16,7 +16,7 @@ mav = pymav()
 mav.connect('/dev/serial0')
 print("CONNECTED")
 
-picam = initialize_cam(gain = 1, ExposureTime=2000)
+picam = initialize_cam(gain = 1, ExposureTime=2000, lenspos = 0.1)
 time.sleep(2)  # Allow the camera to stabilize
 
 
@@ -58,7 +58,6 @@ def compute_displacement(centroid, pos):
     # Adjust to center frame
     x_frame -= 1280 / 2
     y_frame -= 720 / 2  
-    y_frame *= -1  # Flip y-axis for Cartesian representation
 
     # Pixel to meters conversion with altitude consideration
     delta_x, delta_y = convert_pixel_to_meters(x_frame, y_frame, 7)
