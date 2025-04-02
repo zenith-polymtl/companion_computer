@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from libcamera import controls
 
-def initialize_cam(gain = 1, ExposureTime = 5000, lenspos = 0.143):
+def initialize_cam(gain = 1, ExposureTime = 5000, lenspos = 8):
     
     # Initialize the Raspberry Pi Camera using Picamera2
     picam2 = Picamera2()
@@ -135,7 +135,7 @@ def analyze_csv_dbscan(dataframe, eps=0.0000001, min_samples=3):
     
     return dataframe, centroids_df, cluster_groups, centroids
 
-def analyze_frame_mean(frame, pos = None, scale_percent=10, threshold=254, start_time=None):
+def analyze_frame_mean(frame, pos = None, scale_percent=10, threshold=150, start_time=None):
     """
     Analyzes a single frame for white spots using DBSCAN clustering and overlays the centroid on the frame.
     """

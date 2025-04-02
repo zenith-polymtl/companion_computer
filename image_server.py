@@ -4,7 +4,7 @@ import cv2
 import time
 from analyze_tools import *
 app = Flask(__name__)
-picam2 = initialize_cam(gain = 8, ExposureTime=2000, lenspos = 8)
+picam2 = initialize_cam(gain = 1, ExposureTime=2000, lenspos = 8)
 
 time.sleep(2)  # Allow the camera to stabilize
 
@@ -16,9 +16,9 @@ def generate_frames():
         # Capture a frame using Picamera2
         start_time = time.time()
         frame = picam2.capture_array()
-
+        frame = cv2.flip(frame, 0)
         # Analyze the frame
-        processed_frame, processing_time, centroid = analyze_frame_mean(frame, start_time=start_time)
+        frame, processing_time, centroid = analyze_frame_mean(frame, start_time=start_time)
 
 
         print(f"Analysis FPS : {1/processing_time:8.2f} Hz // Time taken by analysis : {processing_time:8.4f} seconds")
