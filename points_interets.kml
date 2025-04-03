@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="17">
+        <Placemark id="19">
+            <name>Point 45.511330495465224,-73.62257860723489</name>
+            <Point id="18">
+                <coordinates>-73.62257860723489,45.511330495465224,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="21">s
+            <name>Point 45.5113413551493,-73.62255261395937</name>
+            <Point id="20">
+                <coordinates>-73.62255261395937,45.5113413551493,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="23">
+            <name>Point 45.51133193853123,-73.62251735812669</name>
+            <Point id="22">
+                <coordinates>-73.62251735812669,45.51133193853123,0.0</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>

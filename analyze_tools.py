@@ -2,10 +2,10 @@ import cv2
 from sklearn.cluster import DBSCAN
 import numpy as np
 import time
-from picamera2 import Picamera2
+#from picamera2 import Picamera2
 import matplotlib.pyplot as plt
 import pandas as pd
-
+'''
 def initialize_cam(gain = 1.5):
     
 # Initialize the Raspberry Pi Camera using Picamera2
@@ -67,7 +67,7 @@ def analyze_frame_DBSCAN(frame, min_points_in_cluster=3, scale_percent=10, thres
         return output_frame, total_time, centroid
 
     return frame, time.time() - start_time
-
+'''
 def analyze_csv_dbscan(dataframe, eps=0.0001, min_samples=3):
     """
     Reads a DataFrame with Est_Lat and Est_Lon, applies DBSCAN clustering,

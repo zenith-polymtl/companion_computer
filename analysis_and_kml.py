@@ -7,6 +7,7 @@ import matplotlib
 import time
 matplotlib.use('Agg')  # Use headless (non-GUI) backend
 import matplotlib.pyplot as plt
+import csv
 
 def get_latest_csv():
     """Finds the most recent CSV file in the data directory"""
@@ -18,20 +19,26 @@ def get_latest_csv():
     return None
 
 while True:
-    try:
-        latest_csv = get_latest_csv()
+    try: #peutêtre a couper si je veux juste un csv précis / mettre le lien dans lastest_csv ligne 34
+        #latest_csv = get_latest_csv()
 
-        if not latest_csv:
+        '''  if not latest_csv:
             print("No CSV file found! Waiting for data...")
             sleep(30)
-            continue
+            continue'''
 
-        print(f"🔄 Trying to load data from: {latest_csv}")
+        #print(f"🔄 Trying to load data from: {latest_csv}")
+        import os
+
+        file_path = "/home/avatar/companion_computer/ demo_sauvergarde/2025-02-06/hotspots_metadata.csv"
+        if not os.path.exists(file_path):
+             print(f"❌ Le fichier n'existe pas : {file_path}")
+    # Ajouter une logique ici pour gérer ce cas, par exemple créer un fichier vide ou quitter.
 
         # Retry mechanism for file reading
         for attempt in range(5):  # Retry 5 times before giving up
-            try:
-                data = read_csv(latest_csv, encoding='utf-8')  # Force UTF-8 encoding
+            try: # la
+                data = read_csv("/home/avatar/companion_computer/ demo_sauvergarde/2025-02-06/hotspots_metadata.csv", encoding='utf-8')  # Force UTF-8 encoding
                 break  # Success, exit loop
             except Exception as e:
                 print(f"⚠️ Error reading CSV (attempt {attempt+1}): {e}")
@@ -86,4 +93,18 @@ while True:
     except Exception as e:
         print(f"❌ Unexpected Error: {e}")
 
+    print(centroids)
+
+
+    '''
+    Ajouté par Laurent pour créer fichier kml avec données centroids:
+    '''
+    output_dir = "companion_computer"
+    file_path = os.path.join(output_dir, 'stock_centroids')
+                             
+    with open(file_path, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerows(centroids)  # Écrit plusieurs lignes
+
     sleep(30)
+

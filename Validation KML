@@ -1,0 +1,24 @@
+from lxml import etree
+
+# Charger le schéma XSD
+#xsd_file = "schema.xsd"  # Remplace par le chemin du fichier XSD
+#xml_file = "fichier.kml"  # Remplace par le fichier KML à valider
+xsd_file = "/home/avatar/companion_computer/3 hotspots - version 1 - Équipe Zenith - Polytechnique Montréal.kml"  # Remplace par le chemin du fichier XSD
+xml_file = "3 hotspots - version 1 - Équipe Zenith - Polytechnique Montréal.kml"
+
+# Charger le schéma XSD
+with open(xsd_file, 'r') as f:
+    xsd_doc = etree.parse(f)
+    xsd_schema = etree.XMLSchema(xsd_doc)
+
+# Charger le fichier KML
+with open(xml_file, 'r') as f:
+    xml_doc = etree.parse(f)
+
+# Valider le fichier KML
+if xsd_schema.validate(xml_doc):
+    print("✅ Le fichier KML est valide !")
+else:
+    print("❌ Le fichier KML est invalide !")
+    for error in xsd_schema.error_log:
+        print(error.message)

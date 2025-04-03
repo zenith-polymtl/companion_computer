@@ -1,6 +1,7 @@
-from pymavlink import mavutil
+#from pymavlink import mavutil     à dé-commenter pour tests avec drone
 import time
 import numpy as np
+import math
 
 # Helper functions
 def is_near_waypoint(actual, target, threshold=2):
@@ -346,3 +347,18 @@ def rectilinear_scan(connection, largeur_detection = 10, altitude = 10, rayon_sc
     total_time = time.time() - start_time
     print("SCAN FINISHED")
     print(f"Total time: {total_time:.2f} seconds")
+
+
+'''def haversine(coord1, coord2):
+    R = 6372800  # Earth radius in meters
+    lat1, lon1 = coord1
+    lat2, lon2 = coord2
+
+    phi1, phi2 = math.radians(lat1), math.radians(lat2) 
+    dphi       = math.radians(lat2 - lat1)
+    dlambda    = math.radians(lon2 - lon1)
+    
+    a = math.sin(dphi/2)**2 + \
+        math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+    
+    return 2*R*math.atan2(math.sqrt(a), math.sqrt(1 - a))'''

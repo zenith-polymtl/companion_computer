@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="1">
+        <Placemark id="3">
+            <name>Source</name>
+            <description><![CDATA[<b>Sam Chicotte, le scout d'la forêt magique</b>]]></description>
+            <Point id="2">
+                <coordinates>-73.6204909,45.5100002,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="5">
+            <name>Hotspot 1</name>
+            <Point id="4">
+                <coordinates>-73.62257860723489,45.511330495465224,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="7">
+            <name>Hotspot 2</name>
+            <Point id="6">
+                <coordinates>-73.62255261395937,45.5113413551493,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="9">
+            <name>Hotspot 3</name>
+            <Point id="8">
+                <coordinates>-73.62251735812669,45.51133193853123,0.0</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>
