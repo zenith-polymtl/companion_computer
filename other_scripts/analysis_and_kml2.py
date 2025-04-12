@@ -1,3 +1,5 @@
+#pas utile
+
 from analyze_tools import analyze_csv_dbscan
 from time import sleep
 from pandas import read_csv
@@ -7,6 +9,7 @@ import matplotlib
 import time
 matplotlib.use('Agg')  # Use headless (non-GUI) backend
 import matplotlib.pyplot as plt
+import csv
 
 def get_latest_csv():
     """Finds the most recent CSV file in the data directory"""
@@ -19,7 +22,7 @@ def get_latest_csv():
 
 while True:
     try:
-        latest_csv = get_latest_csv()
+        latest_csv = '/home/zenith/data/2025-04-01_15-36/detection/hotspots_metadata.csv'
 
         if not latest_csv:
             print("No CSV file found! Waiting for data...")
@@ -75,7 +78,7 @@ while True:
         plt.ylabel("Latitude")
         plt.legend()
         plot_path = os.path.join("data", "hotspots_plot.png")
-        plt.savefig(plot_path)
+        plt.savefig('/home/zenith/data')
         print(f"📊 Plot saved: {plot_path}")
 
         print("✅ POINTS FOUND:")
@@ -85,5 +88,17 @@ while True:
         print("🚨 CSV file not found! Waiting for new data...")
     except Exception as e:
         print(f"❌ Unexpected Error: {e}")
+
+    sleep(30)
+
+    '''
+    Ajouté par Laurent pour créer fichier kml avec données centroids:
+    '''
+    output_dir = "companion_computer"
+    file_path = os.path.join(output_dir, 'stock_centroids')
+                             
+    with open(file_path, 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerows(centroids)  # Écrit plusieurs lignes
 
     sleep(30)
