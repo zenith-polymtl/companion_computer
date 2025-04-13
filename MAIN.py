@@ -71,8 +71,8 @@ def compute_displacement(centroid, pos):
 
     #Rotation matrix to convert the vector delta_x, delta_y of the relative emitter position, in drone frames of reference
     #
-    north_offset = delta_x * math.cos(abs_heading) - delta_y * math.sin(abs_heading)
-    east_offset = delta_x * math.sin(abs_heading) + delta_y * math.cos(abs_heading)
+    north_offset = delta_y * math.cos(abs_heading) - delta_x * math.sin(abs_heading)
+    east_offset = delta_y * math.sin(abs_heading) + delta_x * math.cos(abs_heading)
 
     new_lat = geopy.distance.distance(meters=north_offset).destination((drone_lat, drone_lon), 0).latitude
     new_lon = geopy.distance.distance(meters=east_offset).destination((drone_lat, drone_lon), 90).longitude
